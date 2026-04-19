@@ -29,16 +29,6 @@ static mut DEEP_SLEEP_COUNT: u32 = 0;
 esp_bootloader_esp_idf::esp_app_desc!();
 
 #[embassy_executor::task]
-pub async fn temp_task(temperature: esp_hal::tsens::TemperatureSensor<'static>) {
-    loop {
-        let temp = temperature.get_temperature().to_celsius();
-        info!("Temperature: {}°C", temp);
-        // Read temp very frequently to keep SAR ADC area active
-        embassy_time::Timer::after(Duration::from_millis(10)).await;
-    }
-}
-
-#[embassy_executor::task]
 pub async fn led_task(mut led: esp_hal::gpio::Output<'static>) {
     loop {
         led.toggle();
@@ -72,12 +62,8 @@ async fn main(spawner: Spawner) -> ! {
         count
     );
 
-    let temperature =
-        unwrap!(esp_hal::tsens::TemperatureSensor::new(peripherals.TSENS, Default::default()).ok());
-
     let led = esp_hal::gpio::Output::new(peripherals.GPIO15, false.into(), Default::default());
 
-    spawner.spawn(temp_task(temperature).unwrap());
     spawner.spawn(led_task(led).unwrap());
 
     // Start IEEE 802.15.4 radio with rx_when_idle=true and frequent TX

@@ -1,20 +1,13 @@
-use defmt::{Format, error, info, unwrap, warn};
+use defmt::{error, info, warn};
 use embassy_executor::Spawner;
-use embassy_futures::select::{Either4::*, select, select4};
 use embassy_sync::{
-    blocking_mutex::raw::CriticalSectionRawMutex,
-    channel::Channel,
-    mutex::Mutex,
-    pubsub::{DynPublisher, PubSubChannel},
-    signal::Signal,
+    blocking_mutex::raw::CriticalSectionRawMutex, channel::Channel, signal::Signal,
 };
-use embassy_time::{Duration, Instant, Ticker, Timer, with_timeout};
+use embassy_time::{Duration, Instant, Ticker, with_timeout};
 use esp_radio::ieee802154::{Config, Frame, Ieee802154, ReceivedFrame};
-use heapless::{index_map::FnvIndexMap, index_set::FnvIndexSet};
 use ieee802154::mac::{
     Address, FrameContent, FrameType, FrameVersion, Header, PanId, ShortAddress,
 };
-use static_cell::StaticCell;
 
 static SHUTDOWN_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 static RADIO_DROPPED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
